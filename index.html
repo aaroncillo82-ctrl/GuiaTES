@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#B01E10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GuíaTES">
+<meta name="description" content="Guía de protocolos para Técnico en Emergencias Sanitarias">
+
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+<title>GuíaTES — Emergencias Sanitarias</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+
+  :root {
+    --red: #E8281A;
+    --red-dark: #B01E10;
+    --red-light: #FF4D3F;
+    --navy: #0D1B2A;
+    --navy-mid: #162638;
+    --navy-light: #1E3348;
+    --steel: #2A4A6B;
+    --sky: #4A9FD4;
+    --gold: #F5A623;
+    --white: #F4F6F8;
+    --muted: #8A9BB0;
+    --border: rgba(74,159,212,0.2);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html { height: 100%; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100%;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ========== SPLASH SCREEN ========== */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(160deg, #7B0F0A 0%, #B01E10 40%, #0D1B2A 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  #splash.hidden { opacity: 0; visibility: hidden; }
+  .splash-cross {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .splash-cross::before,
+  .splash-cross::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 4px;
+  }
+  .splash-cross::before { width: 100%; height: 28px; top: 50%; left: 0; transform: translateY(-50%); }
+  .splash-cross::after  { width: 28px; height: 100%; left: 50%; top: 0; transform: translateX(-50%); }
+  .splash-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 2.8rem;
+    letter-spacing: 0.06em;
+    color: white;
+    line-height: 1;
+  }
+  .splash-sub {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-top: 6px;
+  }
+  .splash-loader {
+    margin-top: 40px;
+    width: 48px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .splash-loader-bar {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    animation: load 1.2s ease forwards;
+  }
+  @keyframes load { from { width: 0% } to { width: 100% } }
+
+  /* ========== INSTALL BANNER ========== */
+  #install-banner {
+    display: none;
+    position: fixed;
+    bottom: calc(60px + var(--safe-bottom));
+    left: 12px; right: 12px;
+    background: var(--navy-light);
+    border: 1px solid var(--sky);
+    border-radius: 12px;
+    padding: 14px 16px;
+    z-index: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  #install-banner.show { display: flex; align-items: center; gap: 12px; }
+  .install-text { flex: 1; font-size: 0.82rem; line-height: 1.4; }
+  .install-text strong { color: var(--sky); display: block; font-size: 0.88rem; }
+  .install-btn {
+    background: var(--sky);
+    color: var(--navy);
+    border: none;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 8px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .install-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 1.2rem; cursor: pointer; padding: 4px;
+  }
+
+  /* ========== OFFLINE INDICATOR ========== */
+  #offline-bar {
+    display: none;
+    background: var(--gold);
+    color: var(--navy);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px;
+  }
+  #offline-bar.show { display: block; }
+
+  /* ========== HEADER ========== */
+  header {
+    background: linear-gradient(135deg, var(--red-dark) 0%, #7B0F0A 100%);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    padding-top: var(--safe-top);
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  .header-icon { font-size: 1.8rem; line-height: 1; }
+  .header-text h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    color: #fff;
+    line-height: 1;
+  }
+  .header-text p {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+  .badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ========== BOTTOM NAV ========== */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--navy-mid);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+    padding-bottom: var(--safe-bottom);
+  }
+  .bnav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 3px;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .bnav-btn .icon { font-size: 1.2rem; line-height: 1; }
+  .bnav-btn.active { color: var(--sky); }
+  .bnav-btn.active .icon { filter: drop-shadow(0 0 6px rgba(74,159,212,0.6)); }
+
+  /* ========== MAIN ========== */
+  main {
+    padding: 16px 14px calc(80px + var(--safe-bottom));
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* ========== SECTIONS ========== */
+  .section { display: none; animation: fadeIn 0.2s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ========== CARDS ========== */
+  .card {
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card-header:active { background: rgba(74,159,212,0.1); }
+  .card-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    flex: 1;
+  }
+  .card-subtitle { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
+  .card-chevron { color: var(--muted); font-size: 0.9rem; transition: transform 0.3s; flex-shrink: 0; }
+  .card.open .card-chevron { transform: rotate(180deg); }
+  .card-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+  .card.open .card-body { display: block; }
+
+  /* ========== STEPS ========== */
+  .steps { list-style: none; margin-top: 10px; }
+  .steps li { display: flex; gap: 10px; margin-bottom: 9px; align-items: flex-start; }
+  .step-num {
+    background: var(--sky); color: var(--navy);
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.75rem;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: 0.85rem; line-height: 1.5; }
+  .step-text strong { color: var(--sky); }
+
+  /* ========== ALERTS ========== */
+  .alert {
+    border-radius: 6px; padding: 9px 12px;
+    font-size: 0.8rem; margin: 9px 0;
+    display: flex; gap: 8px; align-items: flex-start; line-height: 1.5;
+  }
+  .alert-red  { background: rgba(232,40,26,0.15);  border-left: 3px solid var(--red); }
+  .alert-gold { background: rgba(245,166,35,0.12); border-left: 3px solid var(--gold); }
+  .alert-sky  { background: rgba(74,159,212,0.12); border-left: 3px solid var(--sky); }
+  .alert-icon { font-size: 0.95rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ========== TABLE ========== */
+  .info-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.78rem; }
+  .info-table th {
+    background: var(--navy-light); color: var(--sky);
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 7px 8px; text-align: left; font-size: 0.7rem;
+  }
+  .info-table td { padding: 7px 8px; border-bottom: 1px solid rgba(74,159,212,0.1); vertical-align: top; line-height: 1.4; }
+  .info-table tr:last-child td { border-bottom: none; }
+
+  /* ========== TAGS ========== */
+  .tag {
+    display: inline-block; border-radius: 3px;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 2px 5px; margin-right: 3px;
+  }
+  .tag-red   { background: rgba(232,40,26,0.3);  color: #FF8A82; }
+  .tag-gold  { background: rgba(245,166,35,0.25); color: #F5C66A; }
+  .tag-sky   { background: rgba(74,159,212,0.25); color: #7EC8F0; }
+  .tag-green { background: rgba(72,199,116,0.2);  color: #72C784; }
+
+  /* ========== SECTION TITLE ========== */
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+    font-size: 1.5rem; letter-spacing: 0.04em;
+    margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-desc { color: var(--muted); font-size: 0.78rem; margin-bottom: 16px; line-height: 1.5; }
+
+  /* ========== MISC ========== */
+  .inmo-block { background: var(--navy-light); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .inmo-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--gold); margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+  .inmo-row { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 0.78rem; margin-bottom: 3px; }
+  .inmo-label { color: var(--muted); font-weight: 500; }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  .quick-card { background: var(--navy-light); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+  .quick-card .qc-icon { font-size: 1.6rem; margin-bottom: 4px; }
+  .quick-card .qc-label { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sky); }
+  .quick-card .qc-val { font-size: 0.72rem; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+
+  .scale-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.8rem; }
+  .scale-color { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+  p.body-text { font-size: 0.83rem; line-height: 1.6; color: rgba(244,246,248,0.85); margin: 7px 0; }
+  .mt8 { margin-top: 8px; }
+  .mt12 { margin-top: 12px; }
+
+  .legal {
+    margin-top: 24px; padding: 12px;
+    background: rgba(232,40,26,0.08); border: 1px solid rgba(232,40,26,0.2);
+    border-radius: 8px; font-size: 0.72rem; color: var(--muted); line-height: 1.6; text-align: center;
+  }
+  .legal strong { color: var(--red-light); }
+
+  /* ========== SEARCH (sección referencia) ========== */
+  .search-bar { position: relative; margin-bottom: 14px; }
+  .search-bar input {
+    width: 100%; background: var(--navy-light); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--white); font-family: 'Barlow', sans-serif;
+    font-size: 0.88rem; padding: 10px 14px 10px 38px; outline: none; transition: border-color 0.2s;
+  }
+  .search-bar input:focus { border-color: var(--sky); }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-cross"></div>
+  <div class="splash-title">GuíaTES</div>
+  <div class="splash-sub">Protocolos de Emergencias Sanitarias</div>
+  <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+</div>
+
+<!-- OFFLINE BAR -->
+<div id="offline-bar">📵 Sin conexión — La guía funciona completa en modo offline</div>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner">
+  <div class="install-text">
+    <strong>Instalar GuíaTES</strong>
+    Acceso directo desde tu pantalla de inicio
+  </div>
+  <button class="install-btn" id="install-btn">Instalar</button>
+  <button class="install-close" id="install-close">✕</button>
+</div>
+
+<header>
+  <div class="header-inner">
+    <div class="header-icon">🚑</div>
+    <div class="header-text">
+      <h1>GuíaTES</h1>
+      <p>Protocolos · Emergencias Sanitarias</p>
+    </div>
+    <div class="badge">TES</div>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== SVB / RCP ===== -->
+<section id="svb" class="section active">
+  <div class="section-title">❤️ SVB y RCP</div>
+  <p class="section-desc">Soporte Vital Básico según guías ERC/ILCOR. Aplica RCP hasta llegada de soporte avanzado o recuperación.</p>
+
+  <div class="alert alert-red">
+    <span class="alert-icon">🔴</span>
+    <span>Ante PCR: <strong>activa el 112</strong>, inicia RCP y solicita DEA inmediatamente.</span>
+  </div>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">⛓️</span>
+      <div><div class="card-title">Cadena de Supervivencia</div><div class="card-subtitle">Adulto extrahospitalario — 6 eslabones</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text"><strong>Reconocimiento precoz</strong> — sin respuesta + sin respiración normal.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>Alerta temprana</strong> — activar SEM (112).</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>RCP precoz</strong> — compresiones de calidad sin demora.</span></li>
+        <li><span class="step-num">4</span><span class="step-text"><strong>Desfibrilación precoz</strong> — DEA en cuanto esté disponible.</span></li>
+        <li><span class="step-num">5</span><span class="step-text"><strong>SVA</strong> — soporte avanzado por equipo médico.</span></li>
+        <li><span class="step-num">6</span><span class="step-text"><strong>Cuidados post-resucitación</strong> — monitorización y soporte.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🤲</span>
+      <div><div class="card-title">RCP Adulto — Paso a Paso</div><div class="card-subtitle">30:2 · 100–120/min · 5–6 cm profundidad</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-gold"><span class="alert-icon">⚠️</span><span>Asegura la escena antes de aproximarte.</span></div>
+      <ul class="steps mt8">
+        <li><span class="step-num">1</span><span class="step-text"><strong>Seguridad</strong> — escena segura para ti y el paciente.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>Respuesta</strong> — sacude hombros: "¿Estás bien?"</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>Pide ayuda</strong> — 112 + DEA.</span></li>
+        <li><span class="step-num">4</span><span class="step-text"><strong>Vía aérea</strong> — frente-mentón. Si trauma: tracción mandibular.</span></li>
+        <li><span class="step-num">5</span><span class="step-text"><strong>Respiración</strong> — mira/escucha/siente ≤10 seg. Gasping = PCR.</span></li>
+        <li><span class="step-num">6</span><span class="step-text"><strong>30 compresiones</strong> — centro del pecho, brazos rectos, 5–6 cm, 100–120/min.</span></li>
+        <li><span class="step-num">7</span><span class="step-text"><strong>2 ventilaciones</strong> — 1 segundo cada una. Bolsa-válvula-mascarilla si disponible.</span></li>
+        <li><span class="step-num">8</span><span class="step-text"><strong>Continuar 30:2</strong> — pausa máx. 10 seg. Rotar cada 2 min.</span></li>
+        <li><span class="step-num">9</span><span class="step-text"><strong>DEA</strong> — enciende, sigue voz, aleja todos en descarga. Reanuda RCP inmediatamente.</span></li>
+      </ul>
+      <div class="alert alert-sky mt8"><span class="alert-icon">ℹ️</span><span>Sin ventilaciones posibles: <strong>RCP solo compresiones</strong> es aceptable.</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">👶</span>
+      <div><div class="card-title">RCP Pediátrica</div><div class="card-subtitle">Lactante (&lt;1 año) · Niño (1 año – pubertad)</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Parámetro</th><th>Lactante</th><th>Niño</th></tr></thead>
+        <tbody>
+          <tr><td>Vía aérea</td><td>Posición neutra</td><td>Frente-mentón suave</td></tr>
+          <tr><td>Inicio</td><td>5 insuflaciones rescate</td><td>5 insuflaciones rescate</td></tr>
+          <tr><td>Compresiones</td><td>2 dedos / 2 pulgares</td><td>1–2 manos</td></tr>
+          <tr><td>Profundidad</td><td>4 cm (1/3 tórax)</td><td>5 cm (1/3 tórax)</td></tr>
+          <tr><td>Relación</td><td>30:2 (1 rescatador) 15:2 (2)</td><td>30:2 (1) / 15:2 (2)</td></tr>
+          <tr><td>DEA</td><td>Atenuador pediátrico</td><td>Atenuador si &lt;25 kg</td></tr>
+        </tbody>
+      </table>
+      <div class="alert alert-gold mt8"><span class="alert-icon">⚠️</span><span>PCR pediátrica suele ser respiratoria: <strong>las 5 insuflaciones iniciales son críticas.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">😮</span>
+      <div><div class="card-title">OVACE — Atragantamiento</div><div class="card-subtitle">Obstrucción de Vía Aérea por Cuerpo Extraño</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text"><strong>Tos efectiva</strong> — anima a toser fuerte. No intervengas.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>Tos ineficaz consciente</strong> — 5 golpes interescapulares + 5 compresiones abdominales (Heimlich). Alterna.</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>Inconsciente</strong> — RCP 30:2. Busca cuerpo extraño al abrir vía aérea.</span></li>
+      </ul>
+      <div class="alert alert-red mt8"><span class="alert-icon">🔴</span><span>Embarazadas u obesos: <strong>compresiones torácicas</strong> en lugar de Heimlich.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== VALORACIÓN ===== -->
+<section id="valoracion" class="section">
+  <div class="section-title">🔍 Valoración</div>
+  <p class="section-desc">Sigue siempre la misma sistemática para no omitir amenazas vitales.</p>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🛡️</span>
+      <div><div class="card-title">Valoración Primaria — ABCDE</div><div class="card-subtitle">Amenazas vitales inmediatas</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">A</span><span class="step-text"><strong>Airway</strong> — ¿vía aérea permeable? Obstrucciones, secreciones. Frente-mentón. Cánula Guedel si inconsciente.</span></li>
+        <li><span class="step-num">B</span><span class="step-text"><strong>Breathing</strong> — FR, profundidad, simetría, SpO₂. O₂ si &lt;94%. Busca: neumotórax, hemotórax.</span></li>
+        <li><span class="step-num">C</span><span class="step-text"><strong>Circulation</strong> — pulso, relleno capilar, color/temperatura piel. Controla hemorragias (presión directa / torniquete en extremidad).</span></li>
+        <li><span class="step-num">D</span><span class="step-text"><strong>Disability</strong> — nivel de consciencia AVPU, pupilas, glucemia.</span></li>
+        <li><span class="step-num">E</span><span class="step-text"><strong>Exposure</strong> — desnuda y busca lesiones ocultas. <strong>Prevén hipotermia</strong>: cubre tras exploración.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🧠</span>
+      <div><div class="card-title">AVPU + Glasgow</div><div class="card-subtitle">Evaluación neurológica rápida</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="scale-row"><div class="scale-color" style="background:#4A9FD4"></div><strong>A</strong> — Alerta: consciente y orientado.</div>
+      <div class="scale-row"><div class="scale-color" style="background:#72C784"></div><strong>V</strong> — Responde a voz.</div>
+      <div class="scale-row"><div class="scale-color" style="background:#F5A623"></div><strong>P</strong> — Responde a dolor (Pain).</div>
+      <div class="scale-row"><div class="scale-color" style="background:#E8281A"></div><strong>U</strong> — No responde (Unresponsive).</div>
+      <div class="divider"></div>
+      <table class="info-table">
+        <thead><tr><th>Glasgow</th><th>Interpretación</th><th>Acción TES</th></tr></thead>
+        <tbody>
+          <tr><td>15</td><td>Normal</td><td>Valoración completa</td></tr>
+          <tr><td>13–14</td><td>Leve alteración</td><td>Vigilancia estrecha</td></tr>
+          <tr><td>9–12</td><td>Moderada</td><td>O₂, vía aérea controlada</td></tr>
+          <tr><td>≤8</td><td>Grave</td><td>SVA urgente</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📊</span>
+      <div><div class="card-title">Constantes Vitales Normales</div><div class="card-subtitle">Por grupo de edad</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Parámetro</th><th>Adulto</th><th>Niño 2–10a</th><th>Lactante</th></tr></thead>
+        <tbody>
+          <tr><td>FR (r/min)</td><td>12–20</td><td>20–30</td><td>30–40</td></tr>
+          <tr><td>FC (l/min)</td><td>60–100</td><td>70–120</td><td>100–160</td></tr>
+          <tr><td>TAS (mmHg)</td><td>90–140</td><td>80–110</td><td>70–90</td></tr>
+          <tr><td>SpO₂</td><td>≥95%</td><td>≥95%</td><td>≥95%</td></tr>
+          <tr><td>Glucemia</td><td>70–140</td><td>70–140</td><td>50–120</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📋</span>
+      <div><div class="card-title">Anamnesis — SAMPLE</div><div class="card-subtitle">Valoración secundaria (paciente estable)</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Letra</th><th>Significado</th><th>Pregunta</th></tr></thead>
+        <tbody>
+          <tr><td><strong>S</strong></td><td>Síntomas</td><td>¿Qué le pasa? ¿Cuándo?</td></tr>
+          <tr><td><strong>A</strong></td><td>Alergias</td><td>¿Alérgico a medicamentos?</td></tr>
+          <tr><td><strong>M</strong></td><td>Medicamentos</td><td>¿Toma medicación habitual?</td></tr>
+          <tr><td><strong>P</strong></td><td>Patologías previas</td><td>¿Enfermedades conocidas?</td></tr>
+          <tr><td><strong>L</strong></td><td>Última ingesta</td><td>¿Cuándo comió/bebió?</td></tr>
+          <tr><td><strong>E</strong></td><td>Eventos previos</td><td>¿Qué estaba haciendo?</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PATOLOGÍAS ===== -->
+<section id="patologias" class="section">
+  <div class="section-title">🩺 Patologías</div>
+  <p class="section-desc">Reconocimiento y actuación inicial en las urgencias más frecuentes.</p>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">❤️‍🔥</span>
+      <div><div class="card-title">Síndrome Coronario Agudo</div><div class="card-subtitle">IAM · Angina — Código Infarto</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-red"><span class="alert-icon">🔴</span><span>Tiempo es músculo. <strong>ECG en &lt;10 min. Activa Código Infarto.</strong></span></div>
+      <p class="body-text"><strong>Reconocimiento:</strong> dolor opresivo irradiado a brazo izq./mandíbula/espalda, sudoración fría, náuseas, disnea.</p>
+      <ul class="steps mt8">
+        <li><span class="step-num">1</span><span class="step-text">Fowler 30–45°. Reposo absoluto.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Monitorización: SpO₂, FC, FR, TA, ECG 12 derivaciones.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">O₂ <strong>solo si</strong> SpO₂ &lt;90%. No de rutina.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Vía venosa periférica (si protocolizado).</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Transmitir ECG al hospital. Traslado urgente.</span></li>
+        <li><span class="step-num">6</span><span class="step-text">Preparar DEA. Vigilancia continua.</span></li>
+      </ul>
+      <div class="alert alert-gold mt8"><span class="alert-icon">⚠️</span><span>Nitratos: verificar TA &gt;90 mmHg. Aspirina solo si protocolizado.</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🧠</span>
+      <div><div class="card-title">Ictus — ACV</div><div class="card-subtitle">Código Ictus · Ventana 4,5 horas</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-red"><span class="alert-icon">🔴</span><span><strong>Anotar hora exacta de inicio</strong> de síntomas o última vez visto normal.</span></div>
+      <p class="body-text"><strong>Escala FAST:</strong></p>
+      <ul class="steps mt8">
+        <li><span class="step-num">F</span><span class="step-text"><strong>Face</strong> — asimetría facial (pídele que sonría).</span></li>
+        <li><span class="step-num">A</span><span class="step-text"><strong>Arms</strong> — debilidad/parálisis de un brazo.</span></li>
+        <li><span class="step-num">S</span><span class="step-text"><strong>Speech</strong> — dificultad para hablar o entender.</span></li>
+        <li><span class="step-num">T</span><span class="step-text"><strong>Time</strong> — hora exacta de inicio.</span></li>
+      </ul>
+      <div class="divider"></div>
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Activar Código Ictus. Notificar hospital receptor.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Decúbito supino (inconsciente) o Fowler 30° (consciente).</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Monitorización. Glucemia (descartar hipoglucemia).</span></li>
+        <li><span class="step-num">4</span><span class="step-text">O₂ si SpO₂ &lt;94%. No bajar TA salvo orden médica.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Traslado urgente. Nada por boca.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">😤</span>
+      <div><div class="card-title">Dificultad Respiratoria</div><div class="card-subtitle">Asma · EPOC · Edema pulmonar · Neumotórax</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Patología</th><th>Actuación TES</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Crisis asmática</strong></td><td>Fowler, O₂, salbutamol inhalado (si protocolizado)</td></tr>
+          <tr><td><strong>EPOC agudizado</strong></td><td>O₂ controlado SpO₂ 88–92%, Fowler, traslado</td></tr>
+          <tr><td><strong>Edema pulmonar</strong></td><td>Fowler máximo, piernas colgando, O₂ alto flujo</td></tr>
+          <tr><td><strong>Neumotórax tensión</strong></td><td>O₂, traslado urgente, alerta SVA inmediata</td></tr>
+        </tbody>
+      </table>
+      <div class="alert alert-gold mt8"><span class="alert-icon">⚠️</span><span>EPOC: evita O₂ alto flujo indefinido. Usa SpO₂ 88–92% como objetivo.</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">⚡</span>
+      <div><div class="card-title">Crisis Epiléptica</div><div class="card-subtitle">Convulsión tónico-clónica · Estatus epiléptico</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text"><strong>Proteger</strong> — aleja objetos. <strong>No inmovilices</strong> los movimientos.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>No introducir nada en la boca.</strong></span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>Cronometrar</strong> — si &gt;5 min: estatus epiléptico → SVA urgente.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Al ceder: PLS. Glucemia. Monitorización post-ictal.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Si protocolizado: diazepam rectal o midazolam intranasal.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🩸</span>
+      <div><div class="card-title">Shock</div><div class="card-subtitle">Hipovolémico · Anafiláctico · Cardiogénico · Séptico</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <p class="body-text"><strong>Reconocimiento:</strong> piel fría/pálida/sudorosa, taquicardia, hipotensión, relleno capilar &gt;2 seg, alteración consciencia.</p>
+      <table class="info-table mt8">
+        <thead><tr><th>Tipo</th><th>Actuación específica</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Hipovolémico</strong></td><td>Control hemorragia, decúbito, piernas 30° (sin trauma)</td></tr>
+          <tr><td><strong>Anafiláctico</strong></td><td>Adrenalina 0,3 mg IM muslo (si protocolizado), O₂, urgente</td></tr>
+          <tr><td><strong>Cardiogénico</strong></td><td>Fowler, O₂, monitorización, urgente (no elevar piernas)</td></tr>
+          <tr><td><strong>Séptico</strong></td><td>Decúbito, O₂, vía venosa, traslado urgente</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🍬</span>
+      <div><div class="card-title">Alteraciones Glucémicas</div><div class="card-subtitle">Hipoglucemia · Hiperglucemia</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th></th><th>Hipo (&lt;70)</th><th>Hiper (&gt;250)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Síntomas</strong></td><td>Sudoración, temblor, confusión, agresividad</td><td>Poliuria, polidipsia, aliento cetósico</td></tr>
+          <tr><td><strong>Actuación</strong></td><td>Consciente: azúcar oral. Inconsciente: glucagón IM</td><td>Hidratación, traslado, monitorización</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🌡️</span>
+      <div><div class="card-title">Emergencias por Temperatura</div><div class="card-subtitle">Golpe de calor · Hipotermia</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th></th><th>Golpe de calor</th><th>Hipotermia</th></tr></thead>
+        <tbody>
+          <tr><td><strong>T°</strong></td><td>&gt;40°C</td><td>&lt;35°C</td></tr>
+          <tr><td><strong>Actuación</strong></td><td>Refrigerar: agua fría en piel, abanicos, traslado urgente</td><td>Manta, retirar ropa húmeda. No frotar extremidades</td></tr>
+        </tbody>
+      </table>
+      <div class="alert alert-gold mt8"><span class="alert-icon">⚠️</span><span>Hipotermia grave: no se considera muerto hasta estar <strong>caliente y muerto</strong>. Continúa RCP durante el recalentamiento.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INMOVILIZACIÓN ===== -->
+<section id="inmovilizacion" class="section">
+  <div class="section-title">🦴 Inmovilización</div>
+  <p class="section-desc">Inmoviliza en la posición encontrada salvo que comprometa la vida.</p>
+
+  <div class="alert alert-red">
+    <span class="alert-icon">🔴</span>
+    <span>Mecanismo de alta energía (accidente, caída &gt;2m, atropello): <strong>sospecha siempre lesión cervical.</strong></span>
+  </div>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🦒</span>
+      <div><div class="card-title">Control Cervical + Collarín</div><div class="card-subtitle">Primer contacto con el paciente</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="inmo-block">
+        <div class="inmo-title">🤲 Control manual bimanual</div>
+        <div class="inmo-row"><div class="inmo-label">Técnica:</div><div>Manos a ambos lados de la cabeza. Alinea suavemente si no hay resistencia ni dolor.</div></div>
+        <div class="inmo-row"><div class="inmo-label">⚠️ No forzar:</div><div>Con resistencia, dolor o crepitación: inmoviliza en la posición encontrada.</div></div>
+      </div>
+      <div class="inmo-block">
+        <div class="inmo-title">📏 Collarín cervical</div>
+        <div class="inmo-row"><div class="inmo-label">Medición:</div><div>Hombro → ángulo mandibular con cuello en posición neutra.</div></div>
+        <div class="inmo-row"><div class="inmo-label">Colocación:</div><div>1. Mantener control manual. 2. Ajustar talla. 3. Introducir parte posterior. 4. Cerrar parte delantera. 5. Verificar: 2 dedos entre collarín y cuello. 6. Mantener control hasta inmovilización completa.</div></div>
+        <div class="inmo-row"><div class="inmo-label">⚠️ Importante:</div><div>El collarín solo limita el movimiento, no inmoviliza. Combinar siempre con tablero o colchón de vacío.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🛏️</span>
+      <div><div class="card-title">Colchón de Vacío</div><div class="card-subtitle">Inmovilización de elección para traslado</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Extender el colchón. Distribuir bolillas homogéneamente.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Colocar al paciente encima (log-roll si trauma espinal).</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Moldear alrededor del cuerpo.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Extraer aire con bomba hasta rigidez completa.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Fijar con correas. Mantener collarín cervical.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🪵</span>
+      <div><div class="card-title">Tablero Espinal + Log-Roll</div><div class="card-subtitle">Técnica de volteo en bloque</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Rescatador en cabeza mantiene control cervical y da órdenes.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Log-roll: 3–4 rescatadores, cuerpo rígido como un tronco.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Colocar tablero. Devolver al decúbito en bloque.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Fijación en orden: <strong>tórax → cadera → piernas → cabeza</strong>.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Verificar: movilidad limitada, pulsos distales conservados.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🪑</span>
+      <div><div class="card-title">Chaleco KED</div><div class="card-subtitle">Extricación de paciente en vehículo</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Control cervical manual en todo momento.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Deslizar KED entre asiento y espalda del paciente.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Ajustar aletas torácicas. Cinchar: <strong>primero tórax, luego piernas</strong>.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Rellenar espacio occipital. Fijar cabeza.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Giro en bloque. Traspasar a tablero o colchón de vacío.</span></li>
+      </ul>
+      <div class="alert alert-red mt8"><span class="alert-icon">🔴</span><span>PCR, inconsciente o inestabilidad hemodinámica: <strong>extricación de emergencia sin KED.</strong></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🦵</span>
+      <div><div class="card-title">Inmovilización de Extremidades</div><div class="card-subtitle">Fracturas · Luxaciones · PSM</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Material</th><th>Indicación</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Férulas rígidas</strong></td><td>Fracturas antebrazo/pierna — inmovilizar articulación sup. e inf. a la fractura</td></tr>
+          <tr><td><strong>Tracción (Donway)</strong></td><td>Fractura de fémur — reducir dolor y hemorragia interna</td></tr>
+          <tr><td><strong>Cabestrillo</strong></td><td>Fracturas clavícula, húmero, antebrazo</td></tr>
+          <tr><td><strong>Torniquete</strong></td><td>Hemorragia masiva en extremidades — anotar hora de aplicación</td></tr>
+        </tbody>
+      </table>
+      <div class="alert alert-sky mt8"><span class="alert-icon">ℹ️</span><span>Siempre verificar <strong>Pulso, Sensibilidad y Movilidad (PSM)</strong> distal antes y después.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRASLADO ===== -->
+<section id="traslado" class="section">
+  <div class="section-title">🚑 Posición y Traslado</div>
+  <p class="section-desc">La posición correcta durante el traslado puede ser tan importante como el tratamiento.</p>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📐</span>
+      <div><div class="card-title">Posiciones Terapéuticas</div><div class="card-subtitle">Guía rápida por patología</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Posición</th><th>Indicada en</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Fowler 30–45°</strong></td><td>SCA, disnea, EPOC, ictus consciente, HTA</td></tr>
+          <tr><td><strong>Fowler 90°</strong></td><td>Edema pulmonar agudo, asma grave</td></tr>
+          <tr><td><strong>Decúbito supino</strong></td><td>PCR, trauma espinal sospechado, shock</td></tr>
+          <tr><td><strong>PLS</strong></td><td>Inconsciente que respira, post-convulsión, vómitos</td></tr>
+          <tr><td><strong>Piernas elevadas 30–45°</strong></td><td>Shock hipovolémico (sin trauma), síncope</td></tr>
+          <tr><td><strong>Decúbito lateral izq.</strong></td><td>Gestante ≥20 semanas (evita compresión cava)</td></tr>
+          <tr><td><strong>Posición fetal</strong></td><td>Dolor abdominal intenso (cólico nefrítico)</td></tr>
+          <tr><td><strong>Antitrendelenburg</strong></td><td>TCE (cabecera 30°, reduce PIC)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🔄</span>
+      <div><div class="card-title">PLS — Posición Lateral de Seguridad</div><div class="card-subtitle">Técnica paso a paso</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text">Paciente en decúbito supino. Arrodíllate a su lado.</span></li>
+        <li><span class="step-num">2</span><span class="step-text">Brazo más cercano a ti: ángulo recto, codo doblado, palma arriba.</span></li>
+        <li><span class="step-num">3</span><span class="step-text">Otro brazo sobre el pecho, dorso de la mano contra su mejilla.</span></li>
+        <li><span class="step-num">4</span><span class="step-text">Dobla la rodilla alejada de ti hacia arriba.</span></li>
+        <li><span class="step-num">5</span><span class="step-text">Tira de esa rodilla para girarlo hacia ti.</span></li>
+        <li><span class="step-num">6</span><span class="step-text">Ajusta: cadera y rodilla en ángulo recto. Cabeza inclinada para abrir vía aérea.</span></li>
+        <li><span class="step-num">7</span><span class="step-text">Monitoriza respiración continuamente.</span></li>
+      </ul>
+      <div class="alert alert-red mt8"><span class="alert-icon">🔴</span><span>Sospecha de trauma espinal: <strong>log-roll controlado</strong>, no PLS estándar.</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🚐</span>
+      <div><div class="card-title">Técnicas de Movilización</div><div class="card-subtitle">Seguridad del paciente y del rescatador</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Técnica</th><th>Cuándo</th><th>Personal</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Camilla de cuchara</strong></td><td>Suelo, sin trauma espinal grave</td><td>2</td></tr>
+          <tr><td><strong>Log-roll + tablero</strong></td><td>Sospecha lesión espinal</td><td>3–4</td></tr>
+          <tr><td><strong>Puente holandés</strong></td><td>Introducir tablero bajo paciente</td><td>3–4</td></tr>
+          <tr><td><strong>Arrastre emergencia</strong></td><td>Escena insegura, urgente</td><td>1–2</td></tr>
+          <tr><td><strong>Silla evacuación</strong></td><td>Escaleras, semi-consciente</td><td>2</td></tr>
+        </tbody>
+      </table>
+      <div class="alert alert-sky mt8"><span class="alert-icon">ℹ️</span><span>Ergonomía: <strong>espalda recta, piernas flexionadas, carga cerca del cuerpo</strong>, movimiento coordinado con conteo.</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📡</span>
+      <div><div class="card-title">Informe SBAR al Hospital</div><div class="card-subtitle">Comunicación estructurada en la transferencia</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">S</span><span class="step-text"><strong>Situation</strong> — quién es el paciente y cuál es el problema actual.</span></li>
+        <li><span class="step-num">B</span><span class="step-text"><strong>Background</strong> — antecedentes, medicación, alergias.</span></li>
+        <li><span class="step-num">A</span><span class="step-text"><strong>Assessment</strong> — valoración y constantes actuales.</span></li>
+        <li><span class="step-num">R</span><span class="step-text"><strong>Recommendation</strong> — tratamiento administrado, respuesta, necesidades.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRIAJE ===== -->
+<section id="triage" class="section">
+  <div class="section-title">🏷️ Triaje IMV</div>
+  <p class="section-desc">Clasificación de víctimas cuando los recursos son insuficientes. El mayor bien para el mayor número.</p>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🎨</span>
+      <div><div class="card-title">Categorías START</div><div class="card-subtitle">Sistema de Triaje en IMV</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="scale-row" style="margin-bottom:12px"><div class="scale-color" style="background:#E8281A;border-radius:4px;width:20px;height:20px"></div><div><span class="tag tag-red">ROJO — Inmediato</span><p style="font-size:0.78rem;margin-top:2px">Riesgo vital, supervivencia probable con atención rápida. Vía aérea comprometida, hemorragia grave, shock.</p></div></div>
+      <div class="scale-row" style="margin-bottom:12px"><div class="scale-color" style="background:#F5A623;border-radius:4px;width:20px;height:20px"></div><div><span class="tag tag-gold">AMARILLO — Diferido</span><p style="font-size:0.78rem;margin-top:2px">Lesiones graves pero estables. Puede esperar 1–2 h. Fracturas cerradas, quemaduras moderadas.</p></div></div>
+      <div class="scale-row" style="margin-bottom:12px"><div class="scale-color" style="background:#72C784;border-radius:4px;width:20px;height:20px"></div><div><span class="tag tag-green">VERDE — Mínimo</span><p style="font-size:0.78rem;margin-top:2px">Lesiones leves. Pueden deambular. Contusiones, heridas menores.</p></div></div>
+      <div class="scale-row"><div class="scale-color" style="background:#555;border-radius:4px;width:20px;height:20px"></div><div><span class="tag" style="background:rgba(150,150,150,0.2);color:#aaa">NEGRO — Expectante</span><p style="font-size:0.78rem;margin-top:2px">PCR sin testigos, lesiones incompatibles con la vida o recursos desproporcionados.</p></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">⚙️</span>
+      <div><div class="card-title">Algoritmo START Rápido</div><div class="card-subtitle">~30 segundos por víctima</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text"><strong>¿Camina?</strong> → SÍ = 🟢 VERDE. NO → continúa.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>¿Respira?</strong> → NO: abre vía aérea. Respira tras maniobra = 🔴 ROJO. No respira = ⚫ NEGRO.</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>¿FR &gt;30/min?</strong> → SÍ = 🔴 ROJO. NO → continúa.</span></li>
+        <li><span class="step-num">4</span><span class="step-text"><strong>¿Relleno capilar &gt;2 seg o pulso radial ausente?</strong> → SÍ = 🔴 ROJO. NO → continúa.</span></li>
+        <li><span class="step-num">5</span><span class="step-text"><strong>¿Obedece órdenes simples?</strong> → SÍ = 🟡 AMARILLO. NO = 🔴 ROJO.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🏥</span>
+      <div><div class="card-title">Gestión de la Escena IMV</div><div class="card-subtitle">5 fases de intervención</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <ul class="steps">
+        <li><span class="step-num">1</span><span class="step-text"><strong>Seguridad</strong> — no entres hasta que la escena sea segura.</span></li>
+        <li><span class="step-num">2</span><span class="step-text"><strong>Estimación</strong> — cuenta víctimas aproximadas. Comunica al 112.</span></li>
+        <li><span class="step-num">3</span><span class="step-text"><strong>Clasificación START</strong> — rápida, sin tratar (salvo apertura de vía aérea y torniquete masivo).</span></li>
+        <li><span class="step-num">4</span><span class="step-text"><strong>Tratamiento</strong> — por prioridades en zonas diferenciadas.</span></li>
+        <li><span class="step-num">5</span><span class="step-text"><strong>Transporte</strong> — evacuación ordenada coordinando con hospitales.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REFERENCIA ===== -->
+<section id="referencia" class="section">
+  <div class="section-title">📚 Referencia</div>
+  <p class="section-desc">Fármacos, material, competencias y valores de referencia rápida.</p>
+
+  <div class="alert alert-red">
+    <span class="alert-icon">🔴</span>
+    <span>Solo administra fármacos <strong>protocolizados en tu comunidad autónoma</strong> o bajo orden médica directa.</span>
+  </div>
+
+  <div class="card open">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">💊</span>
+      <div><div class="card-title">Fármacos Habituales TES</div><div class="card-subtitle">Variable según protocolo autonómico</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>Fármaco</th><th>Indicación</th><th>Vía / Dosis adulto</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Adrenalina</strong></td><td>Anafilaxia, PCR</td><td>0,3–0,5 mg IM muslo / 1 mg IV PCR</td></tr>
+          <tr><td><strong>Salbutamol</strong></td><td>Broncoespasmo</td><td>2–4 pulsaciones MDI, repetible</td></tr>
+          <tr><td><strong>Glucagón</strong></td><td>Hipoglucemia inconsciente</td><td>1 mg IM/SC</td></tr>
+          <tr><td><strong>Diazepam rectal</strong></td><td>Crisis epiléptica</td><td>10 mg rectal</td></tr>
+          <tr><td><strong>Midazolam</strong></td><td>Crisis epiléptica</td><td>10 mg intranasal/bucal</td></tr>
+          <tr><td><strong>Nitroglicerina</strong></td><td>SCA (TAS &gt;90)</td><td>0,4 mg SL, máx. 3 dosis c/5 min</td></tr>
+          <tr><td><strong>AAS</strong></td><td>SCA (si protocolizado)</td><td>150–300 mg VO masticado</td></tr>
+          <tr><td><strong>O₂ medicinal</strong></td><td>SpO₂ &lt;94%</td><td>Ajustar a objetivo SpO₂</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">⚖️</span>
+      <div><div class="card-title">Competencias TES</div><div class="card-subtitle">Qué puedes y no puedes hacer</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <thead><tr><th>✅ TES puede</th><th>❌ Requiere médico/SVA</th></tr></thead>
+        <tbody>
+          <tr><td>SVB / RCP</td><td>Intubación orotraqueal</td></tr>
+          <tr><td>DEA</td><td>Desfibrilación manual</td></tr>
+          <tr><td>O₂ terapia</td><td>Ventilación mecánica invasiva</td></tr>
+          <tr><td>Inmovilización / Traslado</td><td>Drenaje neumotórax</td></tr>
+          <tr><td>Control hemorragias</td><td>Fármacos fuera de protocolo</td></tr>
+          <tr><td>Fármacos protocolizados</td><td>Diagnóstico médico</td></tr>
+          <tr><td>Triaje en IMV</td><td>Alta médica</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📞</span>
+      <div><div class="card-title">Emergencias — España</div><div class="card-subtitle">Números de referencia</div></div>
+      <span class="card-chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="quick-grid">
+        <div class="quick-card"><div class="qc-icon">🆘</div><div class="qc-label">112</div><div class="qc-val">Emergencias europeo</div></div>
+        <div class="quick-card"><div class="qc-icon">🏥</div><div class="qc-label">061</div><div class="qc-val">Urgencias sanitarias</div></div>
+        <div class="quick-card"><div class="qc-icon">☠️</div><div class="qc-label">91 562 04 20</div><div class="qc-val">Toxicología</div></div>
+        <div class="quick-card"><div class="qc-icon">📻</div><div class="qc-label">Central</div><div class="qc-val">Coordinación de tu servicio</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legal">
+    <strong>⚠️ Aviso:</strong> Esta guía es un recurso formativo para TES. No sustituye los protocolos oficiales de tu comunidad autónoma ni la supervisión del coordinador médico. Actúa siempre según los procedimientos aprobados en tu servicio.
+  </div>
+</section>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-btn active" onclick="showSection('svb', this)">
+    <span class="icon">❤️</span>SVB/RCP
+  </button>
+  <button class="bnav-btn" onclick="showSection('valoracion', this)">
+    <span class="icon">🔍</span>Valorar
+  </button>
+  <button class="bnav-btn" onclick="showSection('patologias', this)">
+    <span class="icon">🩺</span>Patol.
+  </button>
+  <button class="bnav-btn" onclick="showSection('inmovilizacion', this)">
+    <span class="icon">🦴</span>Inmo.
+  </button>
+  <button class="bnav-btn" onclick="showSection('traslado', this)">
+    <span class="icon">🚑</span>Traslado
+  </button>
+  <button class="bnav-btn" onclick="showSection('triage', this)">
+    <span class="icon">🏷️</span>Triaje
+  </button>
+  <button class="bnav-btn" onclick="showSection('referencia', this)">
+    <span class="icon">📚</span>Ref.
+  </button>
+</nav>
+
+<script>
+  // ---- SERVICE WORKER ----
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW registrado:', reg.scope))
+        .catch(err => console.log('SW error:', err));
+    });
+  }
+
+  // ---- SPLASH ----
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('splash').classList.add('hidden');
+    }, 1400);
+  });
+
+  // ---- OFFLINE ----
+  function updateOnlineStatus() {
+    const bar = document.getElementById('offline-bar');
+    if (!navigator.onLine) bar.classList.add('show');
+    else bar.classList.remove('show');
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // ---- INSTALL BANNER (PWA) ----
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const banner = document.getElementById('install-banner');
+    // Mostrar banner solo si no se ha instalado
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+      setTimeout(() => banner.classList.add('show'), 2000);
+    }
+  });
+
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    document.getElementById('install-banner').classList.remove('show');
+  });
+
+  document.getElementById('install-close').addEventListener('click', () => {
+    document.getElementById('install-banner').classList.remove('show');
+  });
+
+  // ---- NAVIGATION ----
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---- CARD TOGGLE ----
+  function toggleCard(header) {
+    header.closest('.card').classList.toggle('open');
+  }
+</script>
+</body>
+</html>
